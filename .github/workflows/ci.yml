@@ -58,13 +58,17 @@ jobs:
      #  uses: github/codeql-action/upload-sarif@v3
      #  with:
     #     sarif_file: reports/dependency-check-report.sarif
-
+      - name: Verify Dockerfile
+        run: |
+          pwd
+          ls -la
+          cat Dockerfile
       # Build Docker Image
       - name: Build Docker Image
-        run: docker build -t "$IMAGE_NAME:${{ github.sha }}" .
-
-      - name: Tag Image
-        run: docker tag "$IMAGE_NAME:${{ github.sha }}" "$IMAGE_NAME:latest"
+        run: |
+          docker build --pull --no-cache \
+            -f Dockerfile \
+            -t "$IMAGE_NAME:${{ github.sha }}" .
 
       # Verify the image that Trivy will scan
       - name: Verify Docker Image
