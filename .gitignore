@@ -1,0 +1,6 @@
+.git-backup/
+devsecops-hol/
+desktop.ini
+node_modules/
+target/
+.env
