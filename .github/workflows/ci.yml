@@ -59,20 +59,23 @@ jobs:
      #  with:
     #     sarif_file: reports/dependency-check-report.sarif
 
-      #  Build Docker Image
+      # Build Docker Image
       - name: Build Docker Image
-        run: docker build -t $IMAGE_NAME:${{ github.sha }} .
+        run: docker build -t "$IMAGE_NAME:${{ github.sha }}" .
 
       - name: Tag Image
-        run: docker tag $IMAGE_NAME:${{ github.sha }} $IMAGE_NAME:latest
+        run: docker tag "$IMAGE_NAME:${{ github.sha }}" "$IMAGE_NAME:latest"
 
+      # Verify the image that Trivy will scan
       - name: Verify Docker Image
         run: |
+          echo "Image being scanned: $IMAGE_NAME:latest"
           docker images "$IMAGE_NAME"
           docker image inspect "$IMAGE_NAME:latest" \
             --format 'Image ID: {{.Id}} | Created: {{.Created}}'
           docker history "$IMAGE_NAME:latest"
 
+      # Confirm the image's operating system
       - name: Check Image OS
         run: |
           docker run --rm "$IMAGE_NAME:latest" cat /etc/os-release
