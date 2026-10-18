@@ -95,6 +95,7 @@ jobs:
           severity: 'CRITICAL,HIGH'
 
       - name: Upload Trivy Results
+        if: always() && hashFiles('trivy-image.sarif') != ''
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: trivy-image.sarif
