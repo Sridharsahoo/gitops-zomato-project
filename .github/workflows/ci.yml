@@ -66,6 +66,17 @@ jobs:
       - name: Tag Image
         run: docker tag $IMAGE_NAME:${{ github.sha }} $IMAGE_NAME:latest
 
+      - name: Verify Docker Image
+        run: |
+          docker images "$IMAGE_NAME"
+          docker image inspect "$IMAGE_NAME:latest" \
+            --format 'Image ID: {{.Id}} | Created: {{.Created}}'
+          docker history "$IMAGE_NAME:latest"
+
+      - name: Check Image OS
+        run: |
+          docker run --rm "$IMAGE_NAME:latest" cat /etc/os-release
+
       #  Install Trivy (Pinned version)
       # ...
       # ...
