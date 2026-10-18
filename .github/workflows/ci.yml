@@ -82,12 +82,13 @@ jobs:
           format: 'sarif'
           output: 'trivy-fs.sarif'
 
-      #  Scan Docker Image
+      # Scan Docker Image
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: '$IMAGE_NAME:latest'
-          format: 'table'
+          image-ref: '${{ env.IMAGE_NAME }}:latest'
+          format: 'sarif'
+          output: 'trivy-image.sarif'
           exit-code: '1'
           ignore-unfixed: true
           vuln-type: 'os,library'
