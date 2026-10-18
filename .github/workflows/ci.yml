@@ -3,11 +3,11 @@ name: CI-CD Pipeline
 on:
   push:
     branches:
-      - main
+      - master
 
 env:
   APP_PORT: 3000
-  IMAGE_NAME: sridharsahoo/aws-devops-lab
+  IMAGE_NAME: sridharsahoo/zomatoimage
   CONTAINER_NAME: zomato_app
 
 jobs:
@@ -58,31 +58,13 @@ jobs:
      #  uses: github/codeql-action/upload-sarif@v3
      #  with:
     #     sarif_file: reports/dependency-check-report.sarif
-      - name: Verify Dockerfile
-        run: |
-          pwd
-          ls -la
-          cat Dockerfile
-      # Build Docker Image
+
+      #  Build Docker Image
       - name: Build Docker Image
-        run: |
-          docker build --pull --no-cache \
-            -f Dockerfile \
-            -t "$IMAGE_NAME:${{ github.sha }}" .
+        run: docker build -t $IMAGE_NAME:${{ github.sha }} .
 
-      # Verify the image that Trivy will scan
-      - name: Verify Docker Image
-        run: |
-          echo "Image being scanned: $IMAGE_NAME:latest"
-          docker images "$IMAGE_NAME"
-          docker image inspect "$IMAGE_NAME:latest" \
-            --format 'Image ID: {{.Id}} | Created: {{.Created}}'
-          docker history "$IMAGE_NAME:latest"
-
-      # Confirm the image's operating system
-      - name: Check Image OS
-        run: |
-          docker run --rm "$IMAGE_NAME:latest" cat /etc/os-release
+      - name: Tag Image
+        run: docker tag $IMAGE_NAME:${{ github.sha }} $IMAGE_NAME:latest
 
       #  Install Trivy (Pinned version)
       # ...
@@ -100,20 +82,18 @@ jobs:
           format: 'sarif'
           output: 'trivy-fs.sarif'
 
-      # Scan Docker Image
+      #  Scan Docker Image
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: '${{ env.IMAGE_NAME }}:latest'
-          format: 'sarif'
-          output: 'trivy-image.sarif'
+          image-ref: '$IMAGE_NAME:latest'
+          format: 'table'
           exit-code: '1'
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
 
       - name: Upload Trivy Results
-        if: always() && hashFiles('trivy-image.sarif') != ''
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: trivy-image.sarif
